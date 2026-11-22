@@ -5,3 +5,5 @@ __pycache__/
 .venv/
 # macOS Finder metadata
 .DS_Store
+# Local editor/assistant settings
+.claude/

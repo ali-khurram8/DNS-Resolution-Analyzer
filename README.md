@@ -9,7 +9,7 @@ We built an iterative DNS resolver in Python that encodes and parses DNS message
 | Deliverable | Where |
 |---|---|
 | Architecture diagram + addressing plan | [docs/architecture.svg](docs/architecture.svg), [Addressing](#addressing-plan) |
-| Working POC | `docker compose up`, then [scripts/demo.py](scripts/demo.py) |
+| Working POC | `docker compose up`, then [scripts/dashboard.py](scripts/dashboard.py) (web dashboard) or [scripts/demo.py](scripts/demo.py) (terminal) |
 | Packet captures (.pcapng) | [captures/evidence/](captures/evidence/) (from [scripts/capture_evidence.py](scripts/capture_evidence.py)) |
 | Annotated Wireshark screenshots | [captures/screenshots/wireshark/](captures/screenshots/wireshark/) + guide: [docs/capture_guide.md](docs/capture_guide.md) |
 | Experiment table (≥3 conditions, 3 runs, mean ± sd, range) | [results/experiment_table.md](results/experiment_table.md), [results/plots/](results/plots/) |
@@ -42,7 +42,8 @@ resolver/dnsresolver/     OUR RESOLVER: message.py (wire format), resolver.py (i
 resolver/tests/           unit tests (encoding, compression, cross-check with dnspython)
 experiments/              code run in the client: measure.py, transports.py,
                           evidence.py, verify.py, compare.py, common.py
-scripts/                  host orchestration: run_experiments.py, capture_evidence.py, demo.py, lab.py
+scripts/                  host orchestration: run_experiments.py, capture_evidence.py, demo.py, lab.py,
+                          dashboard.py + dashboard.html (web dashboard for the live demo)
 analysis/                 analyze.py (statistics, table, graphs)
 captures/                 evidence/*.pcapng, experiments/*.pcapng, screenshots/wireshark/*.png
 results/                  raw/*.csv, summary.csv, experiment_table.md, plots/*.png
@@ -89,6 +90,37 @@ The demo pauses before each step (`--no-pause` runs it straight through):
 5. Truncation: the TXT RRset of `big.example.lab` is larger than 512 bytes, so the reply has TC=1 and the resolver retries over TCP 53.
 6. Do53, DoT and DoH through Unbound: first-query and repeat-query latency.
 7. The same tests with 200 ms RTT added by `tc netem` on the R1–R2 link.
+
+### Web dashboard (same steps, in the browser)
+
+```bash
+python3 scripts/dashboard.py
+```
+
+This opens http://127.0.0.1:8050 in your browser (`--port` changes the port, `--no-browser` skips opening it). It uses the Python standard library only and listens on your own machine only. Press Ctrl+C in the terminal to stop it.
+
+* **Live demo tab:** a guided walk through the 7 steps above.
+  * **Left rail:**
+    * The lab topology stays on screen. After each step, the packets it sent are replayed across client → R2 → R1 → root/TLD/auth or Unbound. The replay is for illustration and not to scale; the real times are in the results.
+    * Below it, the step list shows each finished step's one-line result.
+    * **Run full demo** runs all 7 steps in order, with a progress bar.
+  * **Right side:** one step at a time. Each result leads with its key number, such as "6 queries" or "+45 ms" for DoT's first query, followed by the details:
+    * **Iterative resolution:** a diagram of every query, from the client to the root, TLD or authoritative server, marking the referral or answer. Missing-glue sub-lookups are highlighted in purple, and a UDP → TCP retry after TC=1 is labelled.
+    * **Do53/DoT/DoH:** first-query and repeat-query latency as two bar charts on one shared scale.
+    * **Impairment:** pick the RTT (+20/100/200 ms) and loss (0/2/5 %), then see each transport's first query before → after. **Clear netem** removes the impairment; Run full demo clears it automatically.
+  * **Keyboard:** <kbd>↑</kbd>/<kbd>↓</kbd> choose a step, <kbd>R</kbd> runs it, <kbd>A</kbd> runs all, and <kbd>P</kbd> toggles presenter mode (larger text for a projector).
+* **Header:** "7/7 containers up" (click it for each container's status), the netem setting currently on the transit link, and **Start lab** (`docker compose up -d`) when containers are missing.
+* **Saved results:**
+  * the headline result;
+  * four charts from `results/summary.csv`: first-query latency vs RTT, repeat-query latency vs RTT, repeat-query latency vs loss, and iterative resolution time vs RTT. Hover a chart, or focus it and use ← →, for the mean ± standard deviation and min–max;
+  * a table view under every chart;
+  * the full experiment table and the original plots.
+* **Wireshark evidence:** the annotated screenshots, each labelled with the `.pcapng` it comes from.
+* **Architecture:** the topology diagram.
+
+The charts follow the data-visualisation rules of the `dataviz` skill. The three transport colours were checked for colour-blind separation in light and dark mode, and every bar is also labelled with its name and value. The page follows your system's light or dark setting and works on a phone.
+
+The dashboard runs the same commands as `demo.py` through `docker exec`. The resolver step uses `python3 -m dnsresolver … --json`, and the transport step uses `experiments/compare.py --json`.
 
 You can also run the pieces by hand:
 
