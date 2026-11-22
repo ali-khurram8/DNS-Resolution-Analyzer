@@ -108,7 +108,8 @@ This opens http://127.0.0.1:8050 in your browser (`--port` changes the port, `--
     * **Iterative resolution:** a diagram of every query, from the client to the root, TLD or authoritative server, marking the referral or answer. Missing-glue sub-lookups are highlighted in purple, and a UDP → TCP retry after TC=1 is labelled.
     * **Do53/DoT/DoH:** first-query and repeat-query latency as two bar charts on one shared scale.
     * **Impairment:** pick the RTT (+20/100/200 ms) and loss (0/2/5 %), then see each transport's first query before → after. **Clear netem** removes the impairment; Run full demo clears it automatically.
-  * **Keyboard:** <kbd>↑</kbd>/<kbd>↓</kbd> choose a step, <kbd>R</kbd> runs it, <kbd>A</kbd> runs all, and <kbd>P</kbd> toggles presenter mode (larger text for a projector).
+  * **Keyboard:** <kbd>↑</kbd>/<kbd>↓</kbd> choose a step, <kbd>R</kbd> runs it, <kbd>Shift</kbd>+<kbd>A</kbd> runs all, and <kbd>P</kbd> toggles presenter mode (larger text for a projector). **Shortcuts: on/off** turns these keys off, for example for voice-control users, and the setting is remembered.
+  * **Replay: on/off** under the topology stops the packet animation. It is off automatically if your system asks for reduced motion.
 * **Header:** "7/7 containers up" (click it for each container's status), the netem setting currently on the transit link, and **Start lab** (`docker compose up -d`) when containers are missing.
 * **Saved results:**
   * the headline result;
@@ -119,6 +120,14 @@ This opens http://127.0.0.1:8050 in your browser (`--port` changes the port, `--
 * **Architecture:** the topology diagram.
 
 The charts follow the data-visualisation rules of the `dataviz` skill. The three transport colours were checked for colour-blind separation in light and dark mode, and every bar is also labelled with its name and value. The page follows your system's light or dark setting and works on a phone.
+
+The dashboard was audited against WCAG 2.1 AA, and the issues found were fixed:
+* **Contrast:** text contrast is at least 4.5:1, and field borders and topology lines at least 3:1, in both modes.
+* **Screen readers:** every control and chart mark has a name, and step results, chart values and lab status changes are announced.
+* **Keyboard:** works throughout, and focus is kept while a step runs; tooltips close with Escape.
+* **Layout:** controls are at least 44 px, and the page reflows at 320 px width.
+
+A check with a real screen reader (VoiceOver or NVDA) is still recommended.
 
 The dashboard runs the same commands as `demo.py` through `docker exec`. The resolver step uses `python3 -m dnsresolver … --json`, and the transport step uses `experiments/compare.py --json`.
 
