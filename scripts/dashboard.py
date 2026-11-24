@@ -274,7 +274,7 @@ class Handler(BaseHTTPRequestHandler):
 
     def _static(self, rel):
         full = os.path.realpath(os.path.join(ROOT, rel))
-        allowed = any(full.startswith(os.path.join(ROOT, d) + os.sep) for d in STATIC_DIRS)
+        allowed = any(full.startswith(os.path.normpath(os.path.join(ROOT, d)) + os.sep) for d in STATIC_DIRS)
         if not allowed or not os.path.isfile(full):
             return self._send(404, {"error": "not found"})
         ctype = mimetypes.guess_type(full)[0] or "application/octet-stream"

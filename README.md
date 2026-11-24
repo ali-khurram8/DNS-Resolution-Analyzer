@@ -11,11 +11,9 @@ We built an iterative DNS resolver in Python that encodes and parses DNS message
 | Architecture diagram + addressing plan | [docs/architecture.svg](docs/architecture.svg), [Addressing](#addressing-plan) |
 | Working POC | `docker compose up`, then [scripts/dashboard.py](scripts/dashboard.py) (web dashboard) or [scripts/demo.py](scripts/demo.py) (terminal) |
 | Packet captures (.pcapng) | [captures/evidence/](captures/evidence/) (from [scripts/capture_evidence.py](scripts/capture_evidence.py)) |
-| Annotated Wireshark screenshots | [captures/screenshots/wireshark/](captures/screenshots/wireshark/) + guide: [docs/capture_guide.md](docs/capture_guide.md) |
+| Annotated Wireshark screenshots | [captures/screenshots/wireshark/](captures/screenshots/wireshark/) (each image names its trace and display filter) |
 | Experiment table (≥3 conditions, 3 runs, mean ± sd, range) | [results/experiment_table.md](results/experiment_table.md), [results/plots/](results/plots/) |
-| Technical report | [docs/REPORT.pdf](docs/REPORT.pdf), [docs/REPORT.docx](docs/REPORT.docx) (Word), source [docs/REPORT.md](docs/REPORT.md) |
-| Plain-language project summary | [docs/PROJECT_SUMMARY.docx](docs/PROJECT_SUMMARY.docx) |
-| Code and file guide (what every file does) | [docs/CODE_GUIDE.docx](docs/CODE_GUIDE.docx) |
+| Technical report | [docs/REPORT.pdf](docs/REPORT.pdf), [docs/REPORT.docx](docs/REPORT.docx) (Word) |
 | AI-use disclosure | [AI_DISCLOSURE.md](AI_DISCLOSURE.md) |
 
 ---
@@ -47,8 +45,7 @@ scripts/                  host orchestration: run_experiments.py, capture_eviden
 analysis/                 analyze.py (statistics, table, graphs)
 captures/                 evidence/*.pcapng, experiments/*.pcapng, screenshots/wireshark/*.png
 results/                  raw/*.csv, summary.csv, experiment_table.md, plots/*.png
-docs/                     REPORT.pdf/.docx/.md, PROJECT_SUMMARY.docx, CODE_GUIDE.docx,
-                          architecture.svg, capture_guide.md
+docs/                     REPORT.pdf/.docx, architecture.svg
 ```
 
 ## 3. Set up the lab (one command)
@@ -159,7 +156,7 @@ docker exec -it client python3 -m unittest discover -s resolver/tests -v
 python scripts/capture_evidence.py
 ```
 
-This writes one `.pcapng` per key exchange to `captures/evidence/` (ICMP/traceroute, iterative UDP 53, missing glue, TC→TCP 53, recursive Do53 on both sides of Unbound, DoT, DoH, and loss with UDP retry versus TCP retransmission). For DoT and DoH it also writes a `*_with_keys.pcapng` copy that has the TLS session keys embedded (`editcap --inject-secrets`), so Wireshark shows the DNS messages inside TLS without any setup. The raw key logs are in `captures/evidence/keys/`. [docs/capture_guide.md](docs/capture_guide.md) lists the Wireshark filters and fields for each trace, and annotated screenshots of every trace are in `captures/screenshots/wireshark/`.
+This writes one `.pcapng` per key exchange to `captures/evidence/` (ICMP/traceroute, iterative UDP 53, missing glue, TC→TCP 53, recursive Do53 on both sides of Unbound, DoT, DoH, and loss with UDP retry versus TCP retransmission). For DoT and DoH it also writes a `*_with_keys.pcapng` copy that has the TLS session keys embedded (`editcap --inject-secrets`), so Wireshark shows the DNS messages inside TLS without any setup. The raw key logs are in `captures/evidence/keys/`. Annotated screenshots of every trace are in `captures/screenshots/wireshark/`, and each one names the trace file and the display filter it was taken with.
 
 
 ## 6. Repeat the experiments
